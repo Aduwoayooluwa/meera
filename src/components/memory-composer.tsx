@@ -157,7 +157,7 @@ export function MemoryComposer() {
             Add a memory
           </div>
           <Text type="secondary" style={{ fontSize: "0.78rem" }}>
-            Paste a note or upload a screenshot, image, or text file.
+            Messy is fine. Meera works better with raw thoughts.
           </Text>
         </div>
       </div>
@@ -229,7 +229,7 @@ export function MemoryComposer() {
           <TextArea
             className="mm-memory-textarea"
             rows={11}
-            placeholder="Drop a note, paste a chat, or write what happened today..."
+            placeholder="Paste the thing you keep thinking about..."
           />
         </Form.Item>
 

@@ -3,11 +3,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { App, Button, Form, Input, Typography } from "antd";
 import { isAxiosError } from "axios";
-import { ArrowRight, Brain, LockKeyhole, Mail, Moon, Sun, User } from "lucide-react";
+import { ArrowRight, LockKeyhole, Mail, Moon, Sun, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { apiClient } from "@/lib/api-client";
+import { MeeraLogo } from "@/components/meera-logo";
 import { useThemeMode } from "@/components/providers";
 
 const { Text } = Typography;
@@ -79,25 +80,13 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div
-                style={{
-                  width: "42px",
-                  height: "42px",
-                  borderRadius: "var(--radius-sm)",
-                  background: "rgba(255,255,255,0.16)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Brain size={21} />
-              </div>
+              <MeeraLogo className="mm-auth-logo-mark" size={42} />
               <div>
                 <div style={{ fontWeight: 700, fontSize: "1.05rem" }}>
-                  Memory Mirror
+                  Meera
                 </div>
                 <div style={{ opacity: 0.76, fontSize: "0.8rem" }}>
-                  private reflections, saved properly
+                  patterns hiding in your own words
                 </div>
               </div>
             </div>
@@ -242,7 +231,7 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
             style={{ fontSize: "0.86rem" }}
           >
             <Text type="secondary">
-              {isSignup ? "Already have an account?" : "New to Memory Mirror?"}
+              {isSignup ? "Already have an account?" : "New to Meera?"}
             </Text>
             <Link
               href={isSignup ? "/login" : "/signup"}

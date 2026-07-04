@@ -5,7 +5,6 @@ import { Dropdown, Skeleton, Typography } from "antd";
 import {
   BarChart3,
   BookOpenText,
-  Brain,
   ChevronDown,
   History,
   Layers,
@@ -24,9 +23,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { listChatSessions } from "@/app/actions/chat-actions";
+import { getPatternEngineSnapshot } from "@/app/actions/insight-actions";
 import { listMemorySources } from "@/app/actions/memory-actions";
 import { ChatPanel } from "@/components/chat-panel";
 import { InsightsPanel } from "@/components/insights-panel";
+import { MeeraLogo } from "@/components/meera-logo";
 import { MemoryComposer } from "@/components/memory-composer";
 import { MemorySourceList } from "@/components/memory-source-list";
 import { PatternEnginePanel } from "@/components/pattern-engine-panel";
@@ -36,6 +37,7 @@ import { formatRelativeDay } from "@/lib/format-relative-time";
 import type {
   ChatSessionSummary,
   MemorySourceSummary,
+  PatternEngineSnapshot,
   UserSummary,
 } from "@/lib/types";
 
@@ -136,9 +138,7 @@ function AppHeader({
     <header className="mm-app-header shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-3">
-        <div className="mm-logo-dot">
-          <Brain size={18} strokeWidth={2.4} />
-        </div>
+        <MeeraLogo className="mm-logo-mark" />
         <div>
           <h1
             style={{
@@ -150,7 +150,7 @@ function AppHeader({
               lineHeight: 1.2,
             }}
           >
-            Memory Mirror
+            Meera
           </h1>
           <p
             style={{
@@ -345,26 +345,65 @@ function ChatHistoryList({
 
 function MirrorDock({
   activeSessionId,
+  insightSnapshot,
   isLoading,
   isSessionsLoading,
   onNewChat,
+  onSelectPrompt,
   onSelectSession,
   sources,
   sessions,
 }: {
   activeSessionId?: string;
+  insightSnapshot?: PatternEngineSnapshot;
   isLoading: boolean;
   isSessionsLoading: boolean;
   onNewChat: () => void;
+  onSelectPrompt: (prompt: string) => void;
   onSelectSession: (id: string) => void;
   sources: MemorySourceSummary[];
   sessions: ChatSessionSummary[];
 }) {
   const chunks = sources.reduce((total, source) => total + source.chunkCount, 0);
+  const openLoops = insightSnapshot?.unfinishedShelf.length ?? 0;
+  const repeatedPatterns =
+    insightSnapshot?.cards.filter((card) => card.kind === "repeated-pattern")
+      .length ?? 0;
+  const suggestedQuestion = openLoops
+    ? "What should I finish first?"
+    : "What keeps repeating?";
 
   return (
     <aside className="hidden min-h-0 flex-col gap-3 overflow-y-auto xl:flex">
-      <PatternEnginePanel compact />
+      <section
+        className="mm-today-read"
+        style={{ borderRadius: "var(--radius-lg)" }}
+      >
+        <div className="mm-kicker">Today&apos;s Read</div>
+        <h2>Meera&apos;s current read</h2>
+        {isLoading ? (
+          <Skeleton active paragraph={{ rows: 2 }} title={false} />
+        ) : (
+          <>
+            <p>
+              You have {sources.length} fresh{" "}
+              {sources.length === 1 ? "memory" : "memories"}. Meera sees{" "}
+              {openLoops} open {openLoops === 1 ? "loop" : "loops"} and{" "}
+              {repeatedPatterns} repeated{" "}
+              {repeatedPatterns === 1 ? "pattern" : "patterns"}.
+            </p>
+            <button
+              className="mm-today-suggested"
+              onClick={() => onSelectPrompt(suggestedQuestion)}
+              type="button"
+            >
+              Suggested: Ask “{suggestedQuestion}”
+            </button>
+          </>
+        )}
+      </section>
+
+      <PatternEnginePanel compact onAskInsight={onSelectPrompt} />
 
       {/* CTA */}
       <section
@@ -478,20 +517,28 @@ function MirrorDock({
 
 function MirrorView({
   activeSessionId,
+  insightSnapshot,
   isLoading,
   isSessionsLoading,
   onChatSaved,
+  onInitialPromptConsumed,
   onNewChat,
+  onSelectPrompt,
   onSelectSession,
+  selectedPrompt,
   sources,
   sessions,
 }: {
   activeSessionId?: string;
+  insightSnapshot?: PatternEngineSnapshot;
   isLoading: boolean;
   isSessionsLoading: boolean;
   onChatSaved: () => void;
+  onInitialPromptConsumed: () => void;
   onNewChat: () => void;
+  onSelectPrompt: (prompt: string) => void;
   onSelectSession: (id: string) => void;
+  selectedPrompt?: string;
   sources: MemorySourceSummary[];
   sessions: ChatSessionSummary[];
 }) {
@@ -503,15 +550,19 @@ function MirrorView({
         key={activeSessionId ?? "new-chat"}
         className="h-full min-h-0"
         hasMemories={hasMemories}
+        initialPrompt={selectedPrompt}
         onChatSaved={onChatSaved}
+        onInitialPromptConsumed={onInitialPromptConsumed}
         onSessionChange={onSelectSession}
         sessionId={activeSessionId}
       />
       <MirrorDock
         activeSessionId={activeSessionId}
+        insightSnapshot={insightSnapshot}
         isLoading={isLoading}
         isSessionsLoading={isSessionsLoading}
         onNewChat={onNewChat}
+        onSelectPrompt={onSelectPrompt}
         onSelectSession={onSelectSession}
         sessions={sessions}
         sources={sources}
@@ -535,17 +586,16 @@ function MemoriesView({
           <div
             style={{
               fontSize: "1.5rem",
-              fontWeight: 500,
               color: "var(--foreground)",
-              letterSpacing: "-0.02em",
               lineHeight: 1.2,
               marginBottom: "4px",
             }}
+            className="mm-emotional-heading"
           >
-            Give the mirror something real.
+            Give Meera something real.
           </div>
           <Text type="secondary" style={{ fontSize: "0.85rem" }}>
-            Paste the messy thought. You can refine meaning later.
+            Messy is fine. Meera works better with raw thoughts.
           </Text>
         </div>
         <MemoryComposer />
@@ -570,18 +620,16 @@ function InsightsView({
           <div
             style={{
               fontSize: "1.5rem",
-              fontWeight: 700,
               color: "var(--foreground)",
-              letterSpacing: "-0.02em",
               lineHeight: 1.2,
               marginBottom: "4px",
             }}
+            className="mm-emotional-heading"
           >
-            See what the mirror can work with.
+            Your patterns, pulled from memory.
           </div>
           <Text type="secondary" style={{ fontSize: "0.85rem" }}>
-            Meera turns your saved words into cards, shelf items, and weekly
-            signal.
+            Meera turns saved words into signals, open loops, and next moves.
           </Text>
         </div>
         <PatternEnginePanel />
@@ -601,7 +649,7 @@ function InsightsView({
                 Recent material
               </div>
               <Text type="secondary" style={{ fontSize: "0.78rem" }}>
-                What the mirror has available right now.
+                What Meera has available right now.
               </Text>
             </div>
           </div>
@@ -614,6 +662,7 @@ function InsightsView({
 
 export function AppShell({ user, view }: { user: UserSummary; view: AppView }) {
   const [activeSessionId, setActiveSessionId] = useState<string>();
+  const [selectedPrompt, setSelectedPrompt] = useState<string>();
   const queryClient = useQueryClient();
   const isMirrorView = view === "mirror";
   const { data = [], isLoading } = useQuery({
@@ -626,6 +675,10 @@ export function AppShell({ user, view }: { user: UserSummary; view: AppView }) {
   } = useQuery({
     queryKey: ["chat-sessions"],
     queryFn: listChatSessions,
+  });
+  const { data: insightSnapshot } = useQuery({
+    queryKey: ["pattern-engine"],
+    queryFn: getPatternEngineSnapshot,
   });
 
   const refreshChatHistory = () => {
@@ -656,11 +709,18 @@ export function AppShell({ user, view }: { user: UserSummary; view: AppView }) {
         {view === "mirror" ? (
           <MirrorView
             activeSessionId={activeSessionId}
+            insightSnapshot={insightSnapshot}
             isLoading={isLoading}
             isSessionsLoading={isSessionsLoading}
             onChatSaved={refreshChatHistory}
-            onNewChat={() => setActiveSessionId(undefined)}
+            onInitialPromptConsumed={() => setSelectedPrompt(undefined)}
+            onNewChat={() => {
+              setActiveSessionId(undefined);
+              setSelectedPrompt(undefined);
+            }}
+            onSelectPrompt={setSelectedPrompt}
             onSelectSession={setActiveSessionId}
+            selectedPrompt={selectedPrompt}
             sessions={chatSessions}
             sources={data}
           />

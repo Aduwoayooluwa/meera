@@ -75,12 +75,14 @@ function InsightCard({
   card,
   compact,
   isPending,
+  onAskInsight,
   onFeedback,
   onPin,
 }: {
   card: InsightCardView;
   compact?: boolean;
   isPending: boolean;
+  onAskInsight?: (prompt: string) => void;
   onFeedback: (card: InsightCardView, feedback: InsightFeedback) => void;
   onPin: (card: InsightCardView) => void;
 }) {
@@ -121,6 +123,27 @@ function InsightCard({
         <mark className="mm-evidence-highlight">{card.evidenceSnippet}</mark>
       </div>
 
+      <div className="mm-insight-actions">
+        <button
+          className="mm-insight-action-primary"
+          onClick={() =>
+            onAskInsight?.(`Ask about this ${card.title}: ${card.summary}`)
+          }
+          type="button"
+        >
+          Ask about this
+        </button>
+        <button
+          className="mm-insight-action"
+          onClick={() =>
+            onAskInsight?.(`Turn this into a plan: ${card.summary}`)
+          }
+          type="button"
+        >
+          Turn into plan
+        </button>
+      </div>
+
       {!compact ? (
         <div className="mm-feedback-row" aria-label={`${card.title} feedback`}>
           {feedbackOptions.map(({ value, label, Icon: FeedbackIcon }) => (
@@ -142,7 +165,13 @@ function InsightCard({
   );
 }
 
-export function PatternEnginePanel({ compact = false }: { compact?: boolean }) {
+export function PatternEnginePanel({
+  compact = false,
+  onAskInsight,
+}: {
+  compact?: boolean;
+  onAskInsight?: (prompt: string) => void;
+}) {
   const queryClient = useQueryClient();
   const {
     data,
@@ -229,7 +258,7 @@ export function PatternEnginePanel({ compact = false }: { compact?: boolean }) {
       <div className="mm-pattern-header">
         <div>
           <div className="mm-kicker">Pattern engine</div>
-          <h2>{compact ? "Meera's read" : "Meera's pattern board"}</h2>
+          <h2>{compact ? "Meera’s current read" : "Meera’s pattern board"}</h2>
           {!compact ? (
             <p>
               Insight cards from your own notes, with the exact snippets Meera
@@ -249,6 +278,7 @@ export function PatternEnginePanel({ compact = false }: { compact?: boolean }) {
             compact={compact}
             isPending={pending}
             key={card.key}
+            onAskInsight={onAskInsight}
             onFeedback={handleFeedback}
             onPin={handlePin}
           />

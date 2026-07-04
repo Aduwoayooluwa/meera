@@ -121,7 +121,7 @@ export function Providers({ children }: { children: ReactNode }) {
               borderRadius: 10,
               borderRadiusSM: 6,
               fontFamily:
-                "var(--font-alan-sans), 'Inter', ui-rounded, system-ui, sans-serif",
+                "var(--font-geist-sans), Inter, system-ui, sans-serif",
               controlHeight: 40,
               fontSize: 14,
             },

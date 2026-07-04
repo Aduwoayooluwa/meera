@@ -89,13 +89,17 @@ function cleanErrorMessage(value?: string | null) {
 export function ChatPanel({
   className = "",
   hasMemories,
+  initialPrompt,
   onChatSaved,
+  onInitialPromptConsumed,
   onSessionChange,
   sessionId,
 }: {
   className?: string;
   hasMemories: boolean;
+  initialPrompt?: string;
   onChatSaved: () => void;
+  onInitialPromptConsumed?: () => void;
   onSessionChange: (id: string) => void;
   sessionId?: string;
 }) {
@@ -141,7 +145,8 @@ export function ChatPanel({
       onChatSaved();
     },
   });
-  const trimmedDraft = draft.trim();
+  const visibleDraft = initialPrompt ?? draft;
+  const trimmedDraft = visibleDraft.trim();
   const canSubmit =
     hasMemories &&
     !isLoadingSession &&
@@ -189,6 +194,7 @@ export function ChatPanel({
     setInputHint(null);
     chatMutation.reset();
     setDraft("");
+    onInitialPromptConsumed?.();
     setOptimisticMessages((current) => [
       ...current,
       {
@@ -326,6 +332,24 @@ export function ChatPanel({
                 this weekend?&quot;
               </Text>
             </div>
+            <div className="mm-starter-grid">
+              {[
+                "Find what I’m avoiding",
+                "Turn this into a next action",
+                "What keeps repeating?",
+                "What did I say I would finish?",
+              ].map((prompt) => (
+                <button
+                  className="mm-starter-card"
+                  disabled={chatMutation.isPending || isLoadingSession}
+                  key={prompt}
+                  onClick={() => submit(prompt)}
+                  type="button"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 w-full">
@@ -410,6 +434,7 @@ export function ChatPanel({
             onChange={(event) => {
               const nextValue = event.target.value;
 
+              onInitialPromptConsumed?.();
               setDraft(nextValue);
 
               if (nextValue.trim().length >= 3) {
@@ -420,16 +445,16 @@ export function ChatPanel({
                 chatMutation.reset();
               }
             }}
-            onPressEnter={() => submit(draft)}
+            onPressEnter={() => submit(visibleDraft)}
             placeholder="Ask what feels stuck, unclear, or ready to finish…"
-            value={draft}
+            value={visibleDraft}
             style={{ borderRadius: "var(--radius-sm)", flex: 1 }}
           />
           <Button
             disabled={!canSubmit}
             icon={<SendHorizontal size={15} />}
             loading={chatMutation.isPending}
-            onClick={() => submit(draft)}
+            onClick={() => submit(visibleDraft)}
             type="primary"
             style={{ borderRadius: "var(--radius-sm)", minWidth: "42px" }}
           />
