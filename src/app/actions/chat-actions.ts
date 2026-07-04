@@ -9,6 +9,14 @@ import type {
   EvidenceItem,
 } from "@/lib/types";
 
+type ChatMessageRow = {
+  id: string;
+  role: string;
+  content: string;
+  contextJson: unknown;
+  createdAt: Date;
+};
+
 function toSessionSummary(session: {
   id: string;
   title: string;
@@ -111,7 +119,7 @@ export async function getChatSessionMessages(input: { id: string }) {
   });
 
   return messages.map(
-    (message): ChatMessageView => ({
+    (message: ChatMessageRow): ChatMessageView => ({
       id: message.id,
       role: message.role === "assistant" ? "assistant" : "user",
       content: message.content,
