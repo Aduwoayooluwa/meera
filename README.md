@@ -6,6 +6,25 @@ Most people leave useful self-knowledge scattered across notes, chats, journals,
 
 Meera turns that scattered memory into a living mirror. It helps a person look across what they have already written and ask: What keeps coming back? What did I say I would do? What am I avoiding? What should I finish next?
 
+## Table of Contents
+
+- [The Idea](#the-idea)
+- [Run Locally](#run-locally)
+- [What Meera Does](#what-meera-does)
+- [Core Experience](#core-experience)
+- [Mirror](#mirror)
+- [Today's Read](#todays-read)
+- [Insight Cards](#insight-cards)
+- [The Unfinished Shelf](#the-unfinished-shelf)
+- [Weekly Mirror](#weekly-mirror)
+- [Memory Strength](#memory-strength)
+- [Evidence-First Reflection](#evidence-first-reflection)
+- [Powered by BTL Runtime](#powered-by-btl-runtime)
+- [Why Meera Feels Different](#why-meera-feels-different)
+- [Design Direction](#design-direction)
+- [Privacy Posture](#privacy-posture)
+- [Product Promise](#product-promise)
+
 ## The Idea
 
 Meera is built around a simple belief: your past words already contain signals about your present decisions.
@@ -13,6 +32,37 @@ Meera is built around a simple belief: your past words already contain signals a
 A normal notes app helps you store information. A chat app answers questions. Meera sits between those two ideas. It remembers the raw material and turns it into useful reflection.
 
 The experience is designed to feel less like managing a database and more like opening a calm, intelligent companion that remembers what you keep losing track of.
+
+## Run Locally
+
+Clone the project, install dependencies, configure environment variables, prepare Prisma, and start the app:
+
+```bash
+npm install --legacy-peer-deps
+cp .example.env .env
+npx prisma generate
+npx prisma migrate dev
+npm run dev
+```
+
+The app will run at `http://localhost:3000` by default.
+
+Required environment variables:
+
+- `DATABASE_URL`: PostgreSQL connection string.
+- `BTL_API_KEY`: BTL Runtime API key.
+- `BTL_BASE_URL`: BTL Runtime base URL, for example `https://api.badtheorylabs.com/v1`.
+- `BTL_MODEL`: Runtime model, for example `btl-2`.
+- `NEXT_PUBLIC_SITE_URL`: Public site URL used for SEO metadata, robots, and sitemap output.
+
+For production builds, use:
+
+```bash
+npm run build
+npm run start
+```
+
+The build script runs `prisma generate` before `next build`, so deployed environments generate the Prisma Client before TypeScript checks the app.
 
 ## What Meera Does
 
