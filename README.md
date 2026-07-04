@@ -174,6 +174,17 @@ Meera should say:
 
 That difference is the product.
 
+## Powered by BTL Runtime
+
+Meera uses BTL Runtime for the AI work behind memory reflection and extraction.
+
+- **Provider**: BTL Runtime
+- **Endpoint**: `/v1/chat/completions`
+- **Model**: `btl-2` or the configured Runtime model from `BTL_MODEL`
+- **Used for**: memory reflection, pattern extraction, image-to-memory parsing, and chat responses
+
+The app calls BTL through a server-side client wrapper, keeps the Runtime configuration in environment variables, and routes user-facing reflection through saved memory evidence before generating a response.
+
 ## Why Meera Feels Different
 
 Many AI note tools focus on search, summaries, or chat.
