@@ -80,7 +80,7 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <MeeraLogo className="mm-auth-logo-mark" size={42} />
+              <MeeraLogo className="mm-auth-logo-mark" priority size={42} />
               <div>
                 <div style={{ fontWeight: 700, fontSize: "1.05rem" }}>
                   Meera

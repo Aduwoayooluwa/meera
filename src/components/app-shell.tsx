@@ -138,7 +138,7 @@ function AppHeader({
     <header className="mm-app-header shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-3">
-        <MeeraLogo className="mm-logo-mark" />
+        <MeeraLogo className="mm-logo-mark" priority />
         <div>
           <h1
             style={{

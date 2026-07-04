@@ -508,55 +508,16 @@ select {
 .mm-auth-logo-mark {
   width: 34px;
   height: 34px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
   filter: drop-shadow(0 10px 18px rgba(13, 110, 102, 0.18));
+  object-fit: contain;
 }
 
 .mm-auth-logo-mark {
   width: 42px;
   height: 42px;
   filter: none;
-}
-
-.mm-logo-mark .mm-logo-bg,
-.mm-auth-logo-mark .mm-logo-bg {
-  fill: var(--primary);
-}
-
-.mm-logo-pane {
-  fill: rgba(255, 255, 255, 0.16);
-}
-
-.mm-logo-line {
-  stroke: #ffffff;
-  stroke-width: 2.8;
-}
-
-.mm-logo-spark {
-  fill: #ffffff;
-}
-
-:root[data-theme="dark"] .mm-logo-mark .mm-logo-bg,
-:root[data-theme="dark"] .mm-auth-logo-mark .mm-logo-bg {
-  fill: #2cc8b4;
-}
-
-:root[data-theme="dark"] .mm-logo-line,
-:root[data-theme="dark"] .mm-logo-spark {
-  stroke: #06131d;
-  fill: #06131d;
-}
-
-.mm-auth-logo-mark .mm-logo-bg {
-  fill: rgba(255, 255, 255, 0.16);
-}
-
-.mm-auth-logo-mark .mm-logo-line {
-  stroke: #ffffff;
-}
-
-.mm-auth-logo-mark .mm-logo-spark {
-  fill: #ffffff;
 }
 
 /* ─── Stat tiles ─────────────────────────────────────────────── */

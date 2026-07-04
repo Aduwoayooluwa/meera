@@ -22,9 +22,89 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = new URL(
+  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001",
+);
+const title = "Meera";
+const description =
+  "Meera is a private memory engine that turns saved notes, chats, and raw thoughts into patterns, open loops, and next moves.";
+
 export const metadata: Metadata = {
-  title: "Meera",
-  description: "Patterns hiding in your own words.",
+  metadataBase: siteUrl,
+  applicationName: title,
+  title: {
+    default: title,
+    template: `%s | ${title}`,
+  },
+  description,
+  keywords: [
+    "Meera",
+    "memory engine",
+    "AI notes",
+    "reflection app",
+    "personal knowledge",
+    "weekly review",
+    "pattern recognition",
+    "open loops",
+  ],
+  authors: [{ name: "Meera" }],
+  creator: "Meera",
+  publisher: "Meera",
+  category: "productivity",
+  manifest: "/manifest.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
+  icons: {
+    icon: [
+      {
+        url: "/logo.png",
+        type: "image/png",
+        sizes: "256x256",
+      },
+    ],
+    apple: [
+      {
+        url: "/logo.png",
+        type: "image/png",
+        sizes: "256x256",
+      },
+    ],
+    shortcut: "/logo.png",
+  },
+  openGraph: {
+    title,
+    description,
+    url: "/",
+    siteName: title,
+    images: [
+      {
+        url: "/logo.png",
+        width: 256,
+        height: 256,
+        alt: "Meera logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title,
+    description,
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
