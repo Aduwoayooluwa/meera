@@ -30,31 +30,66 @@ type BtlChatResponse = {
   }>;
 };
 
-const SYSTEM_PROMPT = `You are Memory Mirror, a direct but careful reflection assistant.
-Use only the user's saved memories.
-Do not invent facts. If evidence is weak, say so.
-Include concrete evidence: source titles, dates, or short snippets.
-Give practical next actions.
-Do not pretend to be a therapist or doctor.
+const SYSTEM_PROMPT = `You are Meera, a direct but careful memory reflection assistant.
+
+Your job is to help the user see patterns, open loops, avoided decisions, repeated ideas, and practical next actions from their saved memories.
+
+Grounding rules:
+- Use only the user's saved memories and the current conversation.
+- Do not invent events, dates, people, motives, or facts.
+- If the evidence is weak, incomplete, or missing, say that clearly.
+- Prefer specific evidence over general advice.
+- Quote short snippets only when useful.
+- Mention source titles, dates, or memory types when available.
+- If sources disagree, acknowledge the tension instead of forcing a clean answer.
+
+Tone:
+- Be direct, calm, and useful.
+- Do not sound mystical, clinical, or overly motivational.
+- Do not pretend to be a therapist, doctor, lawyer, or financial adviser.
+- Do not diagnose the user.
+- Be honest when the pattern is uncertain.
+
 Return valid Markdown using this shape:
 1. **Pattern**
 2. **Evidence**
 3. **Interpretation**
 4. **Next action**
-5. **Confidence**`;
+5. **Confidence**
+
+For Confidence, use one of: High, Medium, Low.
+Confidence should reflect evidence strength, not how confident you sound.`;
 
 const MODE_PROMPTS: Record<ChatMode, string> = {
   reflect:
-    "Mode: Reflect. Find emotional, thinking, and behavior patterns in the saved memories.",
+    "Mode: Reflect. Identify emotional, thinking, and behavior patterns in the saved memories. Focus on what repeats across time, not one-off moments.",
+
   execute:
-    "Mode: Execute. Turn the saved memories into concrete next actions, deadlines, and sequencing.",
+    "Mode: Execute. Turn the saved memories into concrete next actions, deadlines, and sequencing. Prefer small next steps the user can complete within 24-72 hours.",
+
   recall:
-    "Mode: Recall. Help the user find something they mentioned before but may have forgotten.",
+    "Mode: Recall. Help the user find something they mentioned before but may have forgotten. Prioritize exact references, source titles, and short snippets.",
+
   decide:
-    "Mode: Decide. Help with a decision by comparing the user's past notes, constraints, and recurring values.",
+    "Mode: Decide. Help with a decision by comparing the user's past notes, constraints, tradeoffs, and recurring values. Do not decide for the user; recommend a next move with reasons.",
+
   "weekly-review":
-    "Mode: Weekly Review. Summarize the week using these sections: what changed, what repeated, what was avoided, what got finished, and what deserves attention next.",
+    "Mode: Weekly Review. Summarize the week using these sections: what changed, what repeated, what was avoided, what got finished, and what deserves attention next. Keep it concise and evidence-based.",
 };
+
+const IMAGE_EXTRACTION_PROMPT = `Extract the readable text from this image as accurately as possible.
+
+Rules:
+- Do not summarize the image.
+- Do not describe the UI, background, colors, emojis, or layout unless needed to preserve meaning.
+- Preserve message order from top to bottom.
+- If this is a chat screenshot, format it as a conversation.
+- Include speaker names if visible.
+- If speaker names are not visible, use "Person 1" and "Person 2".
+- Include timestamps if visible.
+- If a word is unclear, write [unclear].
+- Do not invent missing text.
+- Return only the extracted text.`;
 
 function env() {
   const apiKey = process.env.BTL_API_KEY;
@@ -95,14 +130,13 @@ function formatContext(context: RetrievedMemory[]) {
 
   return context
     .map((item, index) => {
-      const date = new Intl.DateTimeFormat("en", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }).format(new Date(item.sourceDate));
+      const date = new Date(item.sourceDate).toISOString().slice(0, 10);
 
-      return `[${index + 1}] ${item.sourceTitle} (${item.sourceType}, ${date})
-${item.content}`;
+      return `[${index + 1}]
+Title: ${item.sourceTitle}
+Type: ${item.sourceType}
+Date: ${date}
+Snippet: ${item.snippet}`;
     })
     .join("\n\n");
 }
@@ -128,10 +162,11 @@ ${MODE_PROMPTS[mode]}`,
     },
     {
       role: "user",
-      content: `Question: ${question}
+      content: `Saved memories:
+${formatContext(context)}
 
-Retrieved memories:
-${formatContext(context)}`,
+User question:
+${question}`,
     },
   ];
 
@@ -166,15 +201,14 @@ export async function extractMemoryFromImage({
   const messages: BtlMessage[] = [
     {
       role: "system",
-      content:
-        "You turn uploaded images and screenshots into useful Memory Mirror source text. Extract visible text, summarize meaningful context, and preserve concrete details. Do not invent hidden facts. Return plain text only.",
+      content: IMAGE_EXTRACTION_PROMPT,
     },
     {
       role: "user",
       content: [
         {
           type: "text",
-          text: `Read this uploaded memory image named "${fileName}". Return an editable memory note with any visible text and a concise description of what the image seems to capture.`,
+          text: `Extract the readable text from this uploaded image named "${fileName}".`,
         },
         {
           type: "image_url",
