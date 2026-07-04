@@ -1,6 +1,5 @@
 "use server";
 
-import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { countPatternHints } from "@/lib/insights/pattern-engine";
@@ -40,6 +39,10 @@ const demoMemories: MemorySourceInput[] = [
       "The same theme is back: I use research as a way to delay being judged. The useful change this week is that I can name it faster. When I asked what would make the work feel lighter, the answer was a short Saturday plan: draft for 90 minutes, send the demo link, then do one database cleanup only if the story is sent.",
   },
 ];
+
+type MemoryTransaction = {
+  memorySource: Pick<typeof prisma.memorySource, "create" | "deleteMany">;
+};
 
 function toSummary(source: {
   id: string;
@@ -132,7 +135,7 @@ export async function loadDemoMemories() {
   const workspace = await getWorkspace();
   const titles = demoMemories.map((memory) => memory.title);
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  await prisma.$transaction(async (tx: MemoryTransaction) => {
     await tx.memorySource.deleteMany({
       where: {
         workspaceId: workspace.id,
