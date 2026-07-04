@@ -254,6 +254,19 @@ select {
 }
 
 @media (max-width: 540px) {
+  .mm-app-main {
+    padding: 12px !important;
+  }
+
+  .mm-app-frame {
+    gap: 12px !important;
+    height: calc(100svh - 24px) !important;
+  }
+
+  .mm-app-header {
+    gap: 10px;
+  }
+
   .mm-account-name {
     display: none;
   }
@@ -338,6 +351,83 @@ select {
   background: var(--primary-soft);
   color: var(--primary);
   transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .mm-chat-header {
+    padding: 12px 14px 10px !important;
+  }
+
+  .mm-chat-title-row {
+    margin-bottom: 10px !important;
+    gap: 10px;
+  }
+
+  .mm-chat-title-row .mm-section-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .mm-mode-row {
+    gap: 5px;
+  }
+
+  .mm-mode-row .ant-segmented {
+    overflow-x: auto;
+  }
+
+  .mm-mode-row .ant-segmented-item {
+    min-width: 84px;
+    font-size: 0.7rem;
+  }
+
+  .mm-mode-row p {
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .mm-quick-prompts {
+    flex-wrap: nowrap !important;
+    margin-inline: -14px;
+    overflow-x: auto;
+    padding: 0 14px 2px;
+    scrollbar-width: none;
+  }
+
+  .mm-quick-prompts::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mm-quick-prompts .mm-chip {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
+  .mm-chat-scroll {
+    padding: 12px 14px !important;
+  }
+
+  .mm-chat-empty-state {
+    min-height: 0 !important;
+    justify-content: center;
+    gap: 12px;
+    padding-block: 16px;
+  }
+
+  .mm-chat-empty-state .mm-starter-grid {
+    gap: 8px;
+  }
+
+  .mm-chat-empty-state .mm-starter-card {
+    min-height: 58px;
+    padding: 9px 10px;
+    font-size: 0.76rem;
+  }
+
+  .mm-chat-input-bar {
+    padding: 10px 14px 12px !important;
+  }
 }
 
 /* Assistant bubble */
@@ -1291,6 +1381,26 @@ select {
   font-weight: 700;
   line-height: 1.4;
   margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .mm-mode-row {
+    gap: 5px;
+  }
+
+  .mm-mode-row .ant-segmented {
+    overflow-x: auto;
+  }
+
+  .mm-mode-row .ant-segmented-item {
+    min-width: 84px;
+    font-size: 0.7rem;
+  }
+
+  .mm-mode-row p {
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
 }
 
 /* ─── Ant Design overrides (minimal, scoped) ─────────────────── */

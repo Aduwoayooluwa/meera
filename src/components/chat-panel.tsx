@@ -213,10 +213,10 @@ export function ChatPanel({
     >
       {/* Header */}
       <div
-        className="shrink-0 p-4 pb-3"
+        className="mm-chat-header shrink-0 p-4 pb-3"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <div className="flex items-center gap-3 mb-3">
+        <div className="mm-chat-title-row flex items-center gap-3 mb-3">
           <div className="mm-section-icon" style={{ borderRadius: "var(--radius-sm)" }}>
             <MessageCircle size={16} />
           </div>
@@ -300,7 +300,7 @@ export function ChatPanel({
             <Skeleton active paragraph={{ rows: 5 }} />
           </div>
         ) : messages.length === 0 ? (
-          <div className="mx-auto flex h-full min-h-[280px] max-w-lg flex-col items-center justify-center text-center gap-4">
+          <div className="mm-chat-empty-state mx-auto flex h-full min-h-[280px] max-w-lg flex-col items-center justify-center text-center gap-4">
             <div
               style={{
                 width: "58px",
@@ -424,7 +424,7 @@ export function ChatPanel({
 
       {/* Input bar */}
       <div
-        className="shrink-0 p-4"
+        className="mm-chat-input-bar shrink-0 p-4"
         style={{ borderTop: "1px solid var(--border)" }}
       >
         <div className="flex gap-2">

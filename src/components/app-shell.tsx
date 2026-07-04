@@ -687,7 +687,7 @@ export function AppShell({ user, view }: { user: UserSummary; view: AppView }) {
 
   return (
     <main
-      className="app-bg px-4 py-4 text-[var(--foreground)] sm:px-6 lg:px-8"
+      className="app-bg mm-app-main px-4 py-4 text-[var(--foreground)] sm:px-6 lg:px-8"
       style={{
         height: isMirrorView ? "100dvh" : undefined,
         minHeight: "100dvh",
@@ -695,7 +695,7 @@ export function AppShell({ user, view }: { user: UserSummary; view: AppView }) {
       }}
     >
       <div
-        className="mx-auto flex max-w-7xl flex-col gap-5"
+        className="mm-app-frame mx-auto flex max-w-7xl flex-col gap-5"
         style={{
           height: isMirrorView ? "calc(100dvh - 2rem)" : undefined,
           minHeight: isMirrorView ? 0 : "calc(100dvh - 2rem)",

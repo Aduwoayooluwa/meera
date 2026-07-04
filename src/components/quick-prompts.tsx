@@ -17,6 +17,7 @@ export function QuickPrompts({
 }) {
   return (
     <div
+      className="mm-quick-prompts"
       style={{
         display: "flex",
         flexWrap: "wrap",
