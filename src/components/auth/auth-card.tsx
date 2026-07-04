@@ -64,28 +64,34 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
 
   return (
     <main
-      className="app-bg flex min-h-dvh items-center justify-center px-4 py-8 text-[var(--foreground)]"
+      className="app-bg mm-auth-page flex min-h-dvh items-center justify-center px-4 py-8 text-[var(--foreground)]"
     >
       <section
-        className="mm-panel grid w-full max-w-5xl overflow-hidden lg:grid-cols-[0.95fr_1.05fr]"
+        className="mm-panel mm-auth-card grid w-full max-w-5xl overflow-hidden lg:grid-cols-[0.95fr_1.05fr]"
         style={{ borderRadius: "var(--radius-lg)" }}
       >
         <div
-          className="flex min-h-[360px] flex-col justify-between p-6 sm:p-8"
+          className="mm-auth-brand flex min-h-[360px] flex-col justify-between p-6 sm:p-8"
           style={{
             background:
               "linear-gradient(145deg, var(--primary) 0%, #0b4d56 62%, #172033 100%)",
             color: "#ffffff",
           }}
         >
-          <div className="flex items-center justify-between gap-4">
+          <div className="mm-auth-brand-row flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <MeeraLogo className="mm-auth-logo-mark" priority size={42} />
               <div>
-                <div style={{ fontWeight: 700, fontSize: "1.05rem" }}>
+                <div
+                  className="mm-auth-brand-name"
+                  style={{ fontWeight: 700, fontSize: "1.05rem" }}
+                >
                   Meera
                 </div>
-                <div style={{ opacity: 0.76, fontSize: "0.8rem" }}>
+                <div
+                  className="mm-auth-brand-tagline"
+                  style={{ opacity: 0.76, fontSize: "0.8rem" }}
+                >
                   patterns hiding in your own words
                 </div>
               </div>
@@ -105,8 +111,9 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
             </button>
           </div>
 
-          <div>
+          <div className="mm-auth-hero">
             <div
+              className="mm-auth-hero-title"
               style={{
                 fontSize: "clamp(2rem, 6vw, 4.6rem)",
                 fontWeight: 700,
@@ -118,6 +125,7 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
               Your words stay yours.
             </div>
             <p
+              className="mm-auth-hero-copy"
               style={{
                 margin: "20px 0 0",
                 maxWidth: "360px",
@@ -132,7 +140,7 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
           </div>
 
           <div
-            className="grid gap-2 sm:grid-cols-3"
+            className="mm-auth-benefits grid gap-2 sm:grid-cols-3"
             style={{ color: "rgba(255,255,255,0.82)", fontSize: "0.78rem" }}
           >
             <span>Saved memories</span>
@@ -141,8 +149,8 @@ export function AuthCard({ mode }: { mode: AuthMode }) {
           </div>
         </div>
 
-        <div className="p-6 sm:p-8">
-          <div className="mb-8">
+        <div className="mm-auth-form-panel p-6 sm:p-8">
+          <div className="mm-auth-form-heading mb-8">
             <div className="mm-kicker mb-2">
               {isSignup ? "Create account" : "Welcome back"}
             </div>
