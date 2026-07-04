@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#0d6e66",
     icons: [
       {
-        src: "/logo.png",
+        src: "https://meera.zynnode.cc/logo.png",
         sizes: "256x256",
         type: "image/png",
       },

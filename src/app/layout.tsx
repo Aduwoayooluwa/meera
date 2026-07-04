@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 const siteUrl = new URL(
-  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001",
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://meera.zynnode.cc",
 );
 const title = "Meera";
 const description =
@@ -58,19 +58,19 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/logo.png",
+        url: "https://meera.zynnode.cc/logo.png",
         type: "image/png",
         sizes: "256x256",
       },
     ],
     apple: [
       {
-        url: "/logo.png",
+        url: "https://meera.zynnode.cc/logo.png",
         type: "image/png",
         sizes: "256x256",
       },
     ],
-    shortcut: "/logo.png",
+    shortcut: "https://meera.zynnode.cc/logo.png",
   },
   openGraph: {
     title,
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     siteName: title,
     images: [
       {
-        url: "/logo.png",
+        url: "https://meera.zynnode.cc/logo.png",
         width: 256,
         height: 256,
         alt: "Meera logo",
@@ -92,7 +92,7 @@ export const metadata: Metadata = {
     card: "summary",
     title,
     description,
-    images: ["/logo.png"],
+    images: ["https://meera.zynnode.cc/logo.png"],
   },
   robots: {
     index: true,
