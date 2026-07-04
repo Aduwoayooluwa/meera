@@ -37,6 +37,17 @@ export type RetrievedMemory = {
   score: number;
 };
 
+type MemoryChunkWithSource = {
+  id: string;
+  content: string;
+  source: {
+    id: string;
+    title: string;
+    type: string;
+    createdAt: Date;
+  };
+};
+
 function termsFor(value: string) {
   return value
     .toLowerCase()
@@ -59,7 +70,7 @@ function snippetFor(content: string, terms: Set<string>) {
 export async function retrieveContext(workspaceId: string, question: string) {
   const queryTerms = new Set(termsFor(question) ?? []);
 
-  const chunks = await prisma.memoryChunk.findMany({
+  const chunks: MemoryChunkWithSource[] = await prisma.memoryChunk.findMany({
     where: {
       source: {
         workspaceId,

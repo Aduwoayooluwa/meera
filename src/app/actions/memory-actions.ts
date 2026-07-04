@@ -1,5 +1,6 @@
 "use server";
 
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { countPatternHints } from "@/lib/insights/pattern-engine";
@@ -131,7 +132,7 @@ export async function loadDemoMemories() {
   const workspace = await getWorkspace();
   const titles = demoMemories.map((memory) => memory.title);
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.memorySource.deleteMany({
       where: {
         workspaceId: workspace.id,
