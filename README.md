@@ -53,6 +53,8 @@ Required environment variables:
 - `BTL_API_KEY`: BTL Runtime API key.
 - `BTL_BASE_URL`: BTL Runtime base URL, for example `https://api.badtheorylabs.com/v1`.
 - `BTL_MODEL`: Runtime model, for example `btl-2`.
+- `BTL_IMAGE_MODEL`: Image-capable Runtime model for screenshot text extraction, for example `gemini-2.5-flash-image`.
+- `BTL_EMBEDDING_MODEL`: Embedding model for semantic memory retrieval, for example `text-embedding-3-small`.
 - `NEXT_PUBLIC_SITE_URL`: Public site URL used for SEO metadata, robots, and sitemap output.
 
 For production builds, use:
@@ -226,12 +228,14 @@ That difference is the product.
 
 ## Powered by BTL Runtime
 
-Meera uses BTL Runtime for the AI work behind memory reflection and extraction.
+Meera uses BTL Runtime for the AI work behind memory reflection, image extraction, and semantic retrieval.
 
 - **Provider**: BTL Runtime
-- **Endpoint**: `/v1/chat/completions`
-- **Model**: `btl-2` or the configured Runtime model from `BTL_MODEL`
-- **Used for**: memory reflection, pattern extraction, image-to-memory parsing, and chat responses
+- **Endpoints**: `/v1/chat/completions` and `/v1/embeddings`
+- **Chat model**: `btl-2` or the configured Runtime model from `BTL_MODEL`
+- **Image model**: `gemini-2.5-flash-image` or the configured Runtime model from `BTL_IMAGE_MODEL`
+- **Embedding model**: `text-embedding-3-small` or the configured Runtime model from `BTL_EMBEDDING_MODEL`
+- **Used for**: memory reflection, pattern extraction, image-to-memory parsing, semantic memory retrieval, and chat responses
 
 The app calls BTL through a server-side client wrapper, keeps the Runtime configuration in environment variables, and routes user-facing reflection through saved memory evidence before generating a response.
 

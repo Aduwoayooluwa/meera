@@ -1,3 +1,4 @@
+import { generateTextEmbedding, generateTextEmbeddings } from "@/lib/btl/client";
 import { prisma } from "@/lib/prisma";
 
 const STOP_WORDS = new Set([
@@ -40,6 +41,8 @@ export type RetrievedMemory = {
 type MemoryChunkWithSource = {
   id: string;
   content: string;
+  embeddingJson: unknown;
+  embeddingModel: string | null;
   source: {
     id: string;
     title: string;
@@ -47,6 +50,102 @@ type MemoryChunkWithSource = {
     createdAt: Date;
   };
 };
+
+function asEmbedding(value: unknown) {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const embedding = value.filter(
+    (item): item is number => typeof item === "number" && Number.isFinite(item),
+  );
+
+  return embedding.length === value.length && embedding.length > 0
+    ? embedding
+    : null;
+}
+
+function cosineSimilarity(left: number[], right: number[]) {
+  const length = Math.min(left.length, right.length);
+
+  if (length === 0) {
+    return 0;
+  }
+
+  let dot = 0;
+  let leftMagnitude = 0;
+  let rightMagnitude = 0;
+
+  for (let index = 0; index < length; index += 1) {
+    const leftValue = left[index] ?? 0;
+    const rightValue = right[index] ?? 0;
+
+    dot += leftValue * rightValue;
+    leftMagnitude += leftValue * leftValue;
+    rightMagnitude += rightValue * rightValue;
+  }
+
+  if (leftMagnitude === 0 || rightMagnitude === 0) {
+    return 0;
+  }
+
+  return dot / (Math.sqrt(leftMagnitude) * Math.sqrt(rightMagnitude));
+}
+
+async function backfillMissingEmbeddings(chunks: MemoryChunkWithSource[]) {
+  const missingChunks = chunks.filter((chunk) => !asEmbedding(chunk.embeddingJson));
+
+  if (missingChunks.length === 0) {
+    return chunks;
+  }
+
+  const embeddingResult = await generateTextEmbeddings(
+    missingChunks.map((chunk) => chunk.content),
+  ).catch(() => null);
+
+  if (!embeddingResult) {
+    return chunks;
+  }
+
+  const updates = missingChunks.map((chunk, index) => ({
+    chunk,
+    embedding: embeddingResult.embeddings[index],
+  }));
+
+  await Promise.all(
+    updates.map(({ chunk, embedding }) =>
+      prisma.memoryChunk
+        .update({
+          where: {
+            id: chunk.id,
+          },
+          data: {
+            embeddingJson: embedding,
+            embeddingModel: embeddingResult.model,
+          },
+        })
+        .catch(() => null),
+    ),
+  );
+
+  const updatedEmbeddings = new Map(
+    updates
+      .filter((item) => item.embedding)
+      .map(({ chunk, embedding }) => [chunk.id, embedding]),
+  );
+
+  return chunks.map((chunk) => {
+    const embedding = updatedEmbeddings.get(chunk.id);
+
+    return embedding
+      ? {
+          ...chunk,
+          embeddingJson: embedding,
+          embeddingModel: embeddingResult.model,
+        }
+      : chunk;
+  });
+}
 
 function termsFor(value: string) {
   return value
@@ -69,6 +168,9 @@ function snippetFor(content: string, terms: Set<string>) {
 
 export async function retrieveContext(workspaceId: string, question: string) {
   const queryTerms = new Set(termsFor(question) ?? []);
+  const questionEmbedding = await generateTextEmbedding(question)
+    .then((result) => result?.embedding ?? null)
+    .catch(() => null);
 
   const chunks: MemoryChunkWithSource[] = await prisma.memoryChunk.findMany({
     where: {
@@ -91,19 +193,30 @@ export async function retrieveContext(workspaceId: string, question: string) {
     },
     take: 200,
   });
+  const searchableChunks = questionEmbedding
+    ? await backfillMissingEmbeddings(chunks)
+    : chunks;
 
   const now = Date.now();
 
-  return chunks
+  return searchableChunks
     .map((chunk) => {
       const chunkTerms = termsFor(`${chunk.source.title} ${chunk.content}`) ?? [];
       const overlap = chunkTerms.filter((term) => queryTerms.has(term)).length;
+      const chunkEmbedding = asEmbedding(chunk.embeddingJson);
+      const semanticScore =
+        questionEmbedding && chunkEmbedding
+          ? Math.max(0, cosineSimilarity(questionEmbedding, chunkEmbedding))
+          : null;
       const ageDays = Math.max(
         0,
         (now - chunk.source.createdAt.getTime()) / 86_400_000,
       );
       const recency = Math.max(0, 1 - ageDays / 90);
-      const score = overlap * 5 + recency;
+      const score =
+        semanticScore === null
+          ? overlap * 5 + recency
+          : semanticScore * 100 + overlap * 2 + recency;
 
       return {
         chunkId: chunk.id,
@@ -116,7 +229,10 @@ export async function retrieveContext(workspaceId: string, question: string) {
         score,
       };
     })
-    .filter((item) => item.score > 0 || queryTerms.size === 0)
+    .filter(
+      (item) =>
+        item.score > 0 || queryTerms.size === 0 || questionEmbedding !== null,
+    )
     .sort((a, b) => b.score - a.score)
     .slice(0, 10) satisfies RetrievedMemory[];
 }

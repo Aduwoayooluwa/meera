@@ -30,6 +30,13 @@ type BtlChatResponse = {
   }>;
 };
 
+type BtlEmbeddingResponse = {
+  data?: Array<{
+    embedding?: number[];
+    index?: number;
+  }>;
+};
+
 const SYSTEM_PROMPT = `You are Meera, a direct but careful memory reflection assistant.
 
 Your job is to help the user see patterns, open loops, avoided decisions, repeated ideas, and practical next actions from their saved memories.
@@ -81,20 +88,27 @@ const IMAGE_EXTRACTION_PROMPT = `Extract the readable text from this image as ac
 
 Rules:
 - Do not summarize the image.
-- Do not describe the UI, background, colors, emojis, or layout unless needed to preserve meaning.
+- Do not describe the UI, wallpaper, background, colors, emojis, or layout unless needed to preserve meaning.
+- Ignore app chrome, contact cards, notification bars, reply previews, and decorative labels unless they are part of a message.
 - Preserve message order from top to bottom.
-- If this is a chat screenshot, format it as a conversation.
-- Include speaker names if visible.
-- If speaker names are not visible, use "Person 1" and "Person 2".
+- If this is a chat screenshot, format it as a conversation transcript with one message per line.
+- For chat screenshots, infer speakers from bubble side when names are not visible: use "Other person" for left-side incoming messages and "Me" for right-side outgoing messages.
+- Include speaker names if visible. If a visible contact name or phone number is the only identifier, use it for that speaker.
 - Include timestamps if visible.
+- If a message bubble contains only media, write a concise placeholder like [Photo], [Image], [Video], or [Sticker].
 - If a word is unclear, write [unclear].
 - Do not invent missing text.
-- Return only the extracted text.`;
+- Return only the extracted text.
+
+Preferred chat format:
+Speaker: Message (timestamp)`;
 
 function env() {
   const apiKey = process.env.BTL_API_KEY;
   const baseURL = process.env.BTL_BASE_URL;
   const model = process.env.BTL_MODEL;
+  const imageModel = process.env.BTL_IMAGE_MODEL;
+  const embeddingModel = process.env.BTL_EMBEDDING_MODEL;
 
   if (!apiKey || !baseURL || !model) {
     throw new Error(
@@ -108,7 +122,12 @@ function env() {
     completionsPath: baseURL.replace(/\/$/, "").endsWith("/v1")
       ? "/chat/completions"
       : "/v1/chat/completions",
+    embeddingsPath: baseURL.replace(/\/$/, "").endsWith("/v1")
+      ? "/embeddings"
+      : "/v1/embeddings",
     model,
+    imageModel,
+    embeddingModel,
   };
 }
 
@@ -222,7 +241,7 @@ export async function extractMemoryFromImage({
   ];
 
   const response = await client.post<BtlChatResponse>(config.completionsPath, {
-    model: config.model,
+    model: config.imageModel ?? config.model,
     messages,
     temperature: 0.2,
   });
@@ -234,4 +253,51 @@ export async function extractMemoryFromImage({
   }
 
   return text;
+}
+
+export async function generateTextEmbeddings(input: string[]) {
+  const cleanInput = input.map((value) => value.trim()).filter(Boolean);
+
+  if (cleanInput.length === 0) {
+    return null;
+  }
+
+  const config = env();
+
+  if (!config.embeddingModel) {
+    return null;
+  }
+
+  const client = createBtlClient(config);
+  const response = await client.post<BtlEmbeddingResponse>(config.embeddingsPath, {
+    model: config.embeddingModel,
+    input: cleanInput,
+  });
+
+  const embeddings = response.data.data
+    ?.slice()
+    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+    .map((item) => item.embedding);
+
+  if (!embeddings || embeddings.some((embedding) => !embedding)) {
+    throw new Error("BTL Runtime returned an invalid embedding response.");
+  }
+
+  return {
+    embeddings: embeddings as number[][],
+    model: config.embeddingModel,
+  };
+}
+
+export async function generateTextEmbedding(input: string) {
+  const result = await generateTextEmbeddings([input]);
+
+  if (!result) {
+    return null;
+  }
+
+  return {
+    embedding: result.embeddings[0],
+    model: result.model,
+  };
 }

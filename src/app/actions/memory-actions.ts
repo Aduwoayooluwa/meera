@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { generateTextEmbeddings } from "@/lib/btl/client";
 import { countPatternHints } from "@/lib/insights/pattern-engine";
 import { chunkText, normalizeMemoryText } from "@/lib/memory/chunk-text";
 import { prisma } from "@/lib/prisma";
@@ -43,6 +44,24 @@ const demoMemories: MemorySourceInput[] = [
 type MemoryTransaction = {
   memorySource: Pick<typeof prisma.memorySource, "create" | "deleteMany">;
 };
+
+async function buildChunkCreateInputs(chunks: string[]) {
+  try {
+    const embeddingResult = await generateTextEmbeddings(chunks);
+
+    return chunks.map((content, chunkIndex) => ({
+      chunkIndex,
+      content,
+      embeddingJson: embeddingResult?.embeddings[chunkIndex],
+      embeddingModel: embeddingResult?.model,
+    }));
+  } catch {
+    return chunks.map((content, chunkIndex) => ({
+      chunkIndex,
+      content,
+    }));
+  }
+}
 
 function toSummary(source: {
   id: string;
@@ -90,6 +109,7 @@ export async function addMemorySource(input: MemorySourceInput) {
   const parsed = memorySourceInputSchema.parse(input);
   const contentText = normalizeMemoryText(parsed.contentText);
   const chunks = chunkText(contentText);
+  const chunkCreateInputs = await buildChunkCreateInputs(chunks);
 
   await prisma.memorySource.create({
     data: {
@@ -98,10 +118,7 @@ export async function addMemorySource(input: MemorySourceInput) {
       type: parsed.type,
       contentText,
       chunks: {
-        create: chunks.map((content, chunkIndex) => ({
-          chunkIndex,
-          content,
-        })),
+        create: chunkCreateInputs,
       },
     },
   });
@@ -134,6 +151,18 @@ export async function deleteMemorySource(input: { id: string }) {
 export async function loadDemoMemories() {
   const workspace = await getWorkspace();
   const titles = demoMemories.map((memory) => memory.title);
+  const preparedMemories = await Promise.all(
+    demoMemories.map(async (memory) => {
+      const contentText = normalizeMemoryText(memory.contentText);
+      const chunks = chunkText(contentText);
+
+      return {
+        ...memory,
+        contentText,
+        chunks: await buildChunkCreateInputs(chunks),
+      };
+    }),
+  );
 
   await prisma.$transaction(async (tx: MemoryTransaction) => {
     await tx.memorySource.deleteMany({
@@ -145,21 +174,15 @@ export async function loadDemoMemories() {
       },
     });
 
-    for (const memory of demoMemories) {
-      const contentText = normalizeMemoryText(memory.contentText);
-      const chunks = chunkText(contentText);
-
+    for (const memory of preparedMemories) {
       await tx.memorySource.create({
         data: {
           workspaceId: workspace.id,
           title: memory.title,
           type: memory.type,
-          contentText,
+          contentText: memory.contentText,
           chunks: {
-            create: chunks.map((content, chunkIndex) => ({
-              chunkIndex,
-              content,
-            })),
+            create: memory.chunks,
           },
         },
       });

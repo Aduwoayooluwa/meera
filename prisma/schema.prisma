@@ -58,13 +58,15 @@ model MemorySource {
 }
 
 model MemoryChunk {
-  id         String       @id @default(cuid())
-  sourceId   String
-  chunkIndex Int
-  content    String
-  summary    String?
-  createdAt  DateTime     @default(now())
-  source     MemorySource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  sourceId       String
+  chunkIndex     Int
+  content        String
+  summary        String?
+  embeddingJson  Json?
+  embeddingModel String?
+  createdAt      DateTime     @default(now())
+  source         MemorySource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
 
   @@index([sourceId, chunkIndex])
 }
